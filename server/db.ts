@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, embeds, InsertEmbed } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,51 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// Embed database helpers
+export async function createEmbed(embed: InsertEmbed) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+  
+  const result = await db.insert(embeds).values(embed);
+  return result;
+}
+
+export async function getUserEmbeds(userId: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+  
+  return await db.select().from(embeds).where(eq(embeds.userId, userId)).orderBy(desc(embeds.createdAt));
+}
+
+export async function getEmbedById(embedId: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+  
+  const result = await db.select().from(embeds).where(eq(embeds.id, embedId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateEmbed(embedId: number, updates: Partial<InsertEmbed>) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+  
+  return await db.update(embeds).set(updates).where(eq(embeds.id, embedId));
+}
+
+export async function deleteEmbed(embedId: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+  
+  return await db.delete(embeds).where(eq(embeds.id, embedId));
+}
+

@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, json } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -25,4 +25,27 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+/**
+ * Embeds table storing before/after embed configurations
+ */
+export const embeds = mysqlTable("embeds", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  beforeImageUrl: text("beforeImageUrl").notNull(),
+  beforeImageKey: varchar("beforeImageKey", { length: 512 }).notNull(),
+  afterImageUrl: text("afterImageUrl").notNull(),
+  afterImageKey: varchar("afterImageKey", { length: 512 }).notNull(),
+  websiteUrl: text("websiteUrl"),
+  colors: json("colors").$type<string[]>().notNull(),
+  fonts: json("fonts").$type<string[]>().notNull(),
+  toggleStyle: varchar("toggleStyle", { length: 50 }).default("switch").notNull(),
+  width: int("width").default(600).notNull(),
+  height: int("height").default(400).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Embed = typeof embeds.$inferSelect;
+export type InsertEmbed = typeof embeds.$inferInsert;
+
